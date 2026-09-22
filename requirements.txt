@@ -1,0 +1,8 @@
+# Intentionally pinned to versions with known CRITICAL/HIGH CVEs so the
+# STO "Fail on Severity" threshold has something to fail on.
+# Do not copy this file into a real project.
+flask==1.0
+pyyaml==5.3.1
+requests==2.19.0
+urllib3==1.24.1
+jinja2==2.10

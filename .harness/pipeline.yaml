@@ -1,0 +1,54 @@
+pipeline:
+  name: STO Policy Block Critical
+  identifier: sto_policy_block_critical
+  # REPLACE
+  projectIdentifier: <YOUR_PROJECT_IDENTIFIER>
+  # REPLACE
+  orgIdentifier: <YOUR_ORG_IDENTIFIER>
+  properties:
+    ci:
+      codebase:
+        connectorRef: <+input>
+        # REPLACE: your fork of this repo
+        repoName: harness-community/sto-tidbits-policy-configuration
+        build:
+          type: branch
+          spec:
+            branch: main
+  stages:
+    - stage:
+        name: Scan
+        identifier: scan
+        type: CI
+        spec:
+          cloneCodebase: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: AquaTrivy
+                  name: Trivy SCA
+                  identifier: trivy_sca
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: repository
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                      fail_on_severity: none
+                      args:
+                        cli: "--scanners vuln"
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: MarkAsFailure
