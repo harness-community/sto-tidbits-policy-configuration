@@ -36,7 +36,7 @@ pipeline:
                   identifier: trivy_sca
                   spec:
                     mode: orchestration
-                    config: default
+                    config: fs
                     target:
                       type: repository
                       detection: auto
