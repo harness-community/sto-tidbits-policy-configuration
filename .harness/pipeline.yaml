@@ -9,6 +9,7 @@ pipeline:
     ci:
       codebase:
         connectorRef: <+input>
+        # REPLACE: your fork of this repo
         repoName: harness-community/sto-tidbits-policy-configuration
         build:
           type: branch

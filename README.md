@@ -26,14 +26,17 @@ Before you start, make sure you have:
 
 - A Harness account with a **Project** (note org + project identifiers).
 - **STO** enabled. Permission to create **Policies** and **Policy Sets**.
-- A Git connector that can clone this repo (or your fork).
+- A fork of this repo. You will edit `requirements.txt` and push, so the pipeline must clone your fork.
+- A GitHub connector that can clone that fork. Set the connector up in the [connector usage tidbit](https://university-registration.harness.io/self-paced-training-tidbit-introduction-to-cd-connector-usage). This tidbit does not cover connector setup.
 - Harness Cloud build credits.
 
 ---
 
 ## Step 1 — Fork and look at the scan target
 
-The scan input is [`requirements.txt`](./requirements.txt). Fork the repo so your Git connector can read it.
+Fork this repo. The scan input is [`requirements.txt`](./requirements.txt), and a later step commits new pins to that file. Your pipeline has to clone the fork, not this upstream repo.
+
+If you do not have a GitHub connector yet, create one in the [connector usage tidbit](https://university-registration.harness.io/self-paced-training-tidbit-introduction-to-cd-connector-usage).
 
 ---
 
