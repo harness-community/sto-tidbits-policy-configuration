@@ -42,7 +42,7 @@ pipeline:
                     advanced:
                       log:
                         level: info
-                      fail_on_severity: none
+                      fail_on_severity: critical
                       args:
                         cli: "--scanners vuln"
         failureStrategies:

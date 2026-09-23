@@ -67,7 +67,7 @@ That file is the threshold: `CRITICAL > 0` → deny.
 3. Set org, project, and `repoName` to your fork.
 4. Save.
 
-The Trivy step publishes results. It does not apply the threshold; the Policy Set does.
+The Trivy step publishes results and fails the step when it finds a Critical issue. The Policy Set applies the same threshold after the scan.
 
 ---
 
@@ -75,7 +75,7 @@ The Trivy step publishes results. It does not apply the threshold; the Policy Se
 
 **Run.** Git connector, repo, branch `main`.
 
-Trivy finds Critical issues (for example CVE-2020-14343 on PyYAML 5.3.1 — the list follows Trivy’s DB). The scan step completes. The Policy Set evaluates **On Step**, sees `CRITICAL > 0`, and **Error and exit**.
+Trivy finds Critical issues (for example CVE-2020-14343 on PyYAML 5.3.1 — the list follows Trivy’s DB). The scan step fails because **Fail on Severity** is Critical. The Policy Set evaluates **On Step**, sees `CRITICAL > 0`, and **Error and exit**.
 
 Open **Security Tests** on the execution. Then open the policy evaluation on the step. The pipeline is red.
 
