@@ -16,7 +16,7 @@ An STO **policy** is a rule that runs **after a scan step**. It reads the Securi
 
 This tidbit’s rule is a simple threshold: **if Critical count is greater than 0, fail.** The scan still finishes (so you can open Security Tests). The **policy** is what turns that into a red pipeline.
 
-The rule lives in [`policies/block-critical.rego`](./policies/block-critical.rego). You attach it to a **Policy Set** (entity **Security Tests**, event **On Step**, action **Error and exit**). Enforced sets run automatically after every scan step in scope.
+The rule lives in [`policies/block-critical.rego`](./policies/block-critical.rego). You attach it to a **Policy Set** (entity **Security Tests**, event **On Step**, action **Error and exit**), then reference that set on the Trivy step with `enforce.policySets`.
 
 ---
 
@@ -26,15 +26,14 @@ Before you start, make sure you have:
 
 - A Harness account with a **Project** (note org + project identifiers).
 - **STO** enabled. Permission to create **Policies** and **Policy Sets**.
-- A fork of this repo. You will edit `requirements.txt` and push, so the pipeline must clone your fork.
-- A GitHub connector that can clone that fork. Set the connector up in the [connector usage tidbit](https://university-registration.harness.io/self-paced-training-tidbit-introduction-to-cd-connector-usage). This tidbit does not cover connector setup.
+- A GitHub connector that can clone this public repo. Set the connector up in the [connector usage tidbit](https://university-registration.harness.io/self-paced-training-tidbit-introduction-to-cd-connector-usage). This tidbit does not cover connector setup.
 - Harness Cloud build credits.
 
 ---
 
-## Step 1 — Fork and look at the scan target
+## Step 1 — Look at the scan target
 
-Fork this repo. The scan input is [`requirements.txt`](./requirements.txt), and a later step commits new pins to that file. Your pipeline has to clone the fork, not this upstream repo.
+The scan input is [`requirements.txt`](./requirements.txt). The pipeline clones this public repo. You do not need a fork.
 
 If you do not have a GitHub connector yet, create one in the [connector usage tidbit](https://university-registration.harness.io/self-paced-training-tidbit-introduction-to-cd-connector-usage).
 
@@ -54,8 +53,8 @@ That file is the threshold: `CRITICAL > 0` → deny.
 ## Step 3 — Create the Policy Set and enforce it
 
 1. **Policies → Policy Sets → New Policy Set**.
-2. Name: `STO Block Critical`.
-3. **Entity type:** Security Tests.
+2. Name: `STO Block Critical`. The identifier must be `STO_Block_Critical`. That is the id the pipeline references.
+3. **Entity type:** Security Tests. **Pipeline / On Run** does not see the scan output, so the policy passes.
 4. **Event:** On Step.
 5. **Add Policy:** `Block Critical CVEs`.
 6. **Action:** Error and exit.
@@ -67,10 +66,10 @@ That file is the threshold: `CRITICAL > 0` → deny.
 
 1. **Pipelines → Create a Pipeline** → YAML.
 2. Paste [`.harness/pipeline.yaml`](./.harness/pipeline.yaml).
-3. Set org, project, and `repoName` to your fork.
+3. Set org and project. `repoName` stays `harness-community/sto-tidbits-policy-configuration`.
 4. Save.
 
-The Trivy step publishes results and fails the step when it finds a Critical issue. The Policy Set applies the same threshold after the scan.
+`fail_on_severity` is `none`, so Trivy publishes results and the scan command itself does not fail the step. `enforce.policySets` lists `STO_Block_Critical`. That set is what blocks the step.
 
 ---
 
@@ -78,27 +77,9 @@ The Trivy step publishes results and fails the step when it finds a Critical iss
 
 **Run.** Git connector, repo, branch `main`.
 
-Trivy finds Critical issues (for example CVE-2020-14343 on PyYAML 5.3.1 — the list follows Trivy’s DB). The scan step fails because **Fail on Severity** is Critical. The Policy Set evaluates **On Step**, sees `CRITICAL > 0`, and **Error and exit**.
+Trivy finds Critical issues (for example CVE-2020-14343 on PyYAML 5.3.1 — the list follows Trivy’s DB). The scan command finishes. Open the **Trivy SCA** step, then **Policy Enforcement**. The set denies with `Fail: 1 Critical issue(s). Threshold is 0.` The pipeline is red.
 
-Open **Security Tests** on the execution. Then open the policy evaluation on the step. The pipeline is red.
-
-**Red is the correct outcome.** The policy blocked the build.
-
----
-
-## Step 6 — Clear Criticals, go green
-
-Bump the pins:
-
-```txt
-flask>=3.0.0
-pyyaml>=6.0.1
-requests>=2.32.0
-urllib3>=2.2.2
-jinja2>=3.1.4
-```
-
-Commit, push, re-run. If Critical is 0, the policy passes and the pipeline is green. High findings can remain; this policy only counts Critical.
+**Red is the correct outcome.** The policy blocked the build. This tidbit does not bump the pins or re-run for a green build.
 
 ---
 
@@ -117,7 +98,7 @@ deny[msg] {
 }
 ```
 
-[`.harness/pipeline.yaml`](./.harness/pipeline.yaml) — Aqua Trivy on the cloned repo; Policy Set is not in the pipeline YAML. It is attached in **Policies**.
+[`.harness/pipeline.yaml`](./.harness/pipeline.yaml) — Aqua Trivy on this public repo, `fail_on_severity: none`, and `enforce.policySets: STO_Block_Critical`.
 
 ---
 
@@ -125,7 +106,7 @@ deny[msg] {
 
 **Scan is green, pipeline is still red.** That is the policy. Open the step’s policy evaluation.
 
-**Pipeline is green with Criticals in Security Tests.** The Policy Set is not Enforced, wrong scope (project vs account), entity is not **Security Tests**, or event is not **On Step**.
+**Pipeline is green with Criticals in Security Tests.** The step’s `enforce.policySets` id does not match the set, the set is not Enforced, the entity is not **Security Tests**, or the event is not **On Step**. **Pipeline / On Run** evaluates the pipeline, not the scan output, so that set stays green.
 
 **Want to block High as well.** Add a second deny on `outputVariables.HIGH`, or change the threshold.
 

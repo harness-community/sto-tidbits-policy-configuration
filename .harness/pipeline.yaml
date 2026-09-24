@@ -1,15 +1,15 @@
 pipeline:
   name: STO Policy Block Critical
-  identifier: sto_policy_block_critical
+  identifier: STO_Policy_Block_Critical
   # REPLACE
   projectIdentifier: <YOUR_PROJECT_IDENTIFIER>
   # REPLACE
   orgIdentifier: <YOUR_ORG_IDENTIFIER>
+  tags: {}
   properties:
     ci:
       codebase:
         connectorRef: <+input>
-        # REPLACE: your fork of this repo
         repoName: harness-community/sto-tidbits-policy-configuration
         build:
           type: branch
@@ -43,9 +43,17 @@ pipeline:
                     advanced:
                       log:
                         level: info
-                      fail_on_severity: critical
+                      fail_on_severity: none
                       args:
                         cli: "--scanners vuln"
+                    privileged: true
+                    repository:
+                      type: local
+                    sbom:
+                      format: spdx-json
+                  enforce:
+                    policySets:
+                      - STO_Block_Critical
         failureStrategies:
           - onFailure:
               errors:
